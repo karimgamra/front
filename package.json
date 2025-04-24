@@ -10,11 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@fullcalendar/react": "^6.1.17",
     "@reduxjs/toolkit": "^2.6.1",
     "axios": "^1.8.4",
     "daisyui": "^5.0.7",
+    "lucide-react": "^0.493.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-hot-toast": "^2.5.2",
     "react-icons": "^5.5.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.4.0",

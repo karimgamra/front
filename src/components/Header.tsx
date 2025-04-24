@@ -4,17 +4,18 @@ import { logout } from "../features/user/UserSlice";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { GiTeacher } from "react-icons/gi";
-
 import { FaUser, FaEnvelope, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
   const { username, role, email, id } = useSelector((state) => state.user);
+
   const dispatch = useDispatch();
   const url = "http://127.0.0.1:8000/logout";
 
   const handleLogout = async () => {
     try {
-      const response = await axios.post(url, { email: email, id: id });
+      const response = await axios.post(url, { user_id: id });
+
       if (response.data.message) {
         toast.success(response.data.message);
         dispatch(logout());
@@ -22,7 +23,7 @@ const Header = () => {
         toast.error("Logout failed");
       }
     } catch (error) {
-      toast.error("Error logging out");
+      toast.error(error.response?.data?.detail || "Error logging out");
     }
   };
 

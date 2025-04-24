@@ -10,11 +10,13 @@ const links = [
 
 const NavLinks = () => {
   const role = useSelector((state) => state.user.role);
+
   return (
     <>
       {links.map((link) => {
         const { id, url, text } = link;
         if (url === "attendance" && role === "student") return null;
+
         return (
           <li key={id}>
             <NavLink className="capitalize" to={url}>

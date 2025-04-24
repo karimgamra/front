@@ -92,9 +92,11 @@ const Navbar: React.FC = () => {
             </label>
           </label>
           <div>
-            <button className="btn btn-ghost border-base-content transition-all duration-300 hover:btn-primary rounded-2xl">
-              Try Demo
-            </button>
+            <Link to="/contact">
+              <button className="btn btn-primary rounded-2xl">
+                contact us
+              </button>
+            </Link>
           </div>
         </div>
       </div>

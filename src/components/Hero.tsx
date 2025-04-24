@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import img from "../assets/undraw_personal-notebook_blje.svg";
 const Hero = () => {
   return (
@@ -13,9 +14,11 @@ const Hero = () => {
             presentations and seamlessly share documents with students.
           </p>
           <div className="mt-6 flex flex-col sm:flex-row gap-4">
-            <button className="bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-md hover:bg-blue-700 transition-all">
-              Get Started
-            </button>
+            <Link to="/register">
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-xl text-lg font-semibold shadow-md hover:bg-blue-700 transition-all">
+                Get Started
+              </button>
+            </Link>
             <button className="bg-gray-200 text-gray-900 px-6 py-3 rounded-xl text-lg font-semibold shadow-md hover:bg-gray-300 transition-all">
               Learn More
             </button>

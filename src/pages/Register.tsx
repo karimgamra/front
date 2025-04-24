@@ -11,13 +11,14 @@ import {
   ThunkDispatch,
 } from "@reduxjs/toolkit";
 
-const url = "http://127.0.0.1:8000/register";
+const url = "http://127.0.0.1:8000/admin/register"; // Updated to the new endpoint
 
 type RegisterForm = {
   username: string;
   email: string;
   password: string;
-  id: string; // Add the id field for the student or teacher
+  id: string;
+  role: string; // Add role field
 };
 
 type RegisterResponse = {
@@ -36,6 +37,7 @@ export const action =
           username: string | null;
           email: string | null;
           role: string | null;
+          id: string | null;
         };
       },
       UnknownAction,
@@ -48,6 +50,7 @@ export const action =
                   username: string | null;
                   email: string | null;
                   role: string | null;
+                  id: string | null;
                 };
               },
               undefined,
@@ -64,13 +67,22 @@ export const action =
     const data: RegisterForm = Object.fromEntries(formData) as RegisterForm;
 
     try {
-      const response = await axios.post<RegisterResponse>(url, {
-        username: data.username,
-        email: data.email,
-        password: data.password,
-        id: data.id, // Pass the id to the backend
-      });
-      console.log(response);
+      const response = await axios.post<RegisterResponse>(
+        url,
+        {
+          username: data.username,
+          email: data.email,
+          password: data.password,
+          id: data.id,
+          role: data.role, // Pass the role to the backend
+        },
+        {
+          params: {
+            id: "admin001", // Admin credentials for authentication
+            role: "admin",
+          },
+        }
+      );
 
       store.dispatch(
         setUser({
@@ -85,12 +97,10 @@ export const action =
       return redirect("/login");
     } catch (error) {
       const axiosError = error as AxiosError;
-
       const errorMessage =
-        axiosError?.response?.data?.error?.message ||
+        (axiosError?.response?.data as any)?.detail ||
         "Please double-check your credentials";
       toast.error(errorMessage);
-
       return null;
     }
   };
@@ -106,8 +116,22 @@ const Register = () => {
         <FormInput type="text" label="username" name="username" />
         <FormInput type="email" label="email" name="email" />
         <FormInput type="password" label="password" name="password" />
-        <FormInput type="text" label="ID (Student/Teacher ID)" name="id" />{" "}
-        {/* New input for ID */}
+        <FormInput
+          type="text"
+          label="ID (Admin/Student/Teacher ID)"
+          name="id"
+        />
+        {/* Add a dropdown for role */}
+        <div className="form-control">
+          <label className="label">
+            <span className="label-text">Role</span>
+          </label>
+          <select name="role" className="select select-bordered w-full">
+            <option value="admin">Admin</option>
+            <option value="student">Student</option>
+            <option value="teacher">Teacher</option>
+          </select>
+        </div>
         <div className="mt-4">
           <SubmitBtn text="Register" />
         </div>

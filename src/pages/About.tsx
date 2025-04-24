@@ -1,4 +1,20 @@
+import { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
 const About = () => {
+  const navigate = useNavigate();
+  // const location = useLocation();
+  const { id } = useSelector((state) => state.user);
+
+  useEffect(() => {
+    if (id === null) {
+      navigate("/");
+      toast.warning("You Don't have access to this page !!! Go To Register");
+    }
+  }, [navigate]);
+
   return (
     <div className="p-6 max-w-4xl mx-auto  ">
       <p className="text-lg text-base-content leading-8">
