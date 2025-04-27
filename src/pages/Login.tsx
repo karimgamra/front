@@ -36,7 +36,7 @@ export const action =
       return null;
     }
 
-    console.log("Sending login request with data:", data); // Debug log
+    console.log("Sending login request with data:", data);
 
     try {
       const response = await axios.post<LoginResponse>(url, {
@@ -45,23 +45,22 @@ export const action =
         role: data.role,
       });
 
-      console.log("Login response:", response.data); // Debug log
-
-      localStorage.setItem("token", response.data.access_token);
+      console.log("Login response:", response.data);
 
       store.dispatch(
         setUser({
-          username: response.data.username,
+          username: response.data.username || "Unknown", // Fallback if username is empty
           email: null,
           role: response.data.role,
           id: response.data.id,
+          token: response.data.access_token, // Include token
         })
       );
 
       toast.success("Login successful");
-      return redirect("/");
+      return redirect(data.role === "teacher" ? "/attendance" : "/");
     } catch (error) {
-      console.error("Login error:", error); // Debug log
+      console.error("Login error:", error);
       const errorMessage =
         error?.response?.data?.detail ||
         error?.message ||
@@ -70,6 +69,7 @@ export const action =
       return null;
     }
   };
+
 const Login = () => {
   return (
     <section className="h-screen grid place-items-center">
@@ -82,13 +82,13 @@ const Login = () => {
           type="text"
           label="ID (Admin/Student/Teacher ID)"
           name="id"
-          defaultValue="admin001"
+          defaultValue="772"
         />
         <FormInput
           type="password"
           label="Password"
           name="password"
-          defaultValue="adminpass"
+          defaultValue="teacherpass"
         />
         <div className="form-control">
           <label className="label">
@@ -97,7 +97,7 @@ const Login = () => {
           <select
             name="role"
             className="select select-bordered w-full"
-            defaultValue="admin"
+            defaultValue="teacher"
           >
             <option value="admin">Admin</option>
             <option value="student">Student</option>

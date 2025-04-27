@@ -8,6 +8,7 @@ import { FaUser, FaEnvelope, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 
 const Header = () => {
   const { username, role, email, id } = useSelector((state) => state.user);
+  console.log(username);
 
   const dispatch = useDispatch();
   const url = "http://127.0.0.1:8000/logout";
@@ -30,7 +31,7 @@ const Header = () => {
   return (
     <div className="bg-slate-900 py-3 shadow-md">
       <div className="flex justify-between items-center mx-12">
-        {username ? (
+        {id ? (
           <div className="flex items-center gap-6">
             <div className="dropdown relative rounded-xl">
               <div

@@ -46,6 +46,10 @@ const mainRouter = createBrowserRouter([
         path: "courses",
         element: <Courses />,
       },
+      {
+        path: "contact",
+        element: <Contact />,
+      },
     ],
   },
   {

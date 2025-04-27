@@ -10,7 +10,7 @@ import {
   StoreEnhancer,
   ThunkDispatch,
 } from "@reduxjs/toolkit";
-
+// const API_BASE_URL = "https://fastapi-tcs4.onrender.com";
 const url = "http://127.0.0.1:8000/admin/register"; // Updated to the new endpoint
 
 type RegisterForm = {
@@ -98,7 +98,7 @@ export const action =
     } catch (error) {
       const axiosError = error as AxiosError;
       const errorMessage =
-        (axiosError?.response?.data as any)?.detail ||
+        (axiosError?.response?.data as unknown)?.detail ||
         "Please double-check your credentials";
       toast.error(errorMessage);
       return null;

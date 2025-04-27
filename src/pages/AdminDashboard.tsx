@@ -31,6 +31,7 @@ type SubjectForm = {
 
 const AdminDashboard = () => {
   const { token, id: adminId } = useSelector((state: RootState) => state.user);
+  console.log(adminId);
 
   const [studentForm, setStudentForm] = useState<StudentForm>({
     id: "",
@@ -64,7 +65,7 @@ const AdminDashboard = () => {
     e.preventDefault();
     try {
       await axios.post(
-        `http://127.0.0.1:8000/admin/students?id=${adminId}&role=admin`,
+        `http://127.0.0.1:8000/admin/students?id=admin001&role=admin`,
         studentForm,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -110,7 +111,7 @@ const AdminDashboard = () => {
       };
       console.log("Sending payload:", payload);
       await axios.post(
-        `http://127.0.0.1:8000/admin/teachers?id=${adminId}&role=admin`,
+        `http://127.0.0.1:8000/admin/teachers?id=admin001&role=admin`,
         payload,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -128,6 +129,8 @@ const AdminDashboard = () => {
       setSubjectInput("");
       setClassInput("");
     } catch (error) {
+      console.log(error);
+
       console.error("Error response:", error.response?.data);
       const errorMessage =
         error?.response?.data?.detail || "Failed to add teacher";
@@ -346,7 +349,7 @@ const AdminDashboard = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={subjectInput}
+                  value={subjectInput.toUpperCase()}
                   onChange={(e) => setSubjectInput(e.target.value)}
                   className="input input-bordered w-full"
                 />
@@ -373,7 +376,7 @@ const AdminDashboard = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={classInput}
+                  value={classInput.toUpperCase()}
                   onChange={(e) => setClassInput(e.target.value)}
                   className="input input-bordered w-full"
                 />

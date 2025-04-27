@@ -173,13 +173,18 @@ const Calendar: React.FC = () => {
             onChange={handleInputChange}
             className="mt-1 block w-full border rounded p-2"
           >
-            {["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"].map(
-              (day) => (
-                <option key={day} value={day}>
-                  {day}
-                </option>
-              )
-            )}
+            {[
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "sunday",
+            ].map((day) => (
+              <option key={day} value={day}>
+                {day}
+              </option>
+            ))}
           </select>
         </div>
 
