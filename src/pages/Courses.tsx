@@ -51,6 +51,7 @@ const StudentAbsences: React.FC = () => {
       const response = await axios.get(`${BASE_URL}/student/absences`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       const data: AbsenceSummary[] = response.data;
       setAbsences(data);
       if (data.length === 0) {

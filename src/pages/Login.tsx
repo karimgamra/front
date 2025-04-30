@@ -18,6 +18,7 @@ type LoginResponse = {
   username: string;
   role: string;
   id: string;
+  email: string;
 };
 
 export const action =
@@ -50,7 +51,7 @@ export const action =
       store.dispatch(
         setUser({
           username: response.data.username || "Unknown", // Fallback if username is empty
-          email: null,
+          email: response.data.email,
           role: response.data.role,
           id: response.data.id,
           token: response.data.access_token, // Include token

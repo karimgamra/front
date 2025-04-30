@@ -245,7 +245,6 @@ const AttendancePage: React.FC = () => {
         `${BASE_URL}/admin/calendar?id=admin001&role=admin`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      console.log("Calendar data:", calendarResponse.data);
 
       const entries: CalendarEntry[] = calendarResponse.data || [];
       setCalendarEntries(entries);
@@ -275,7 +274,6 @@ const AttendancePage: React.FC = () => {
           month + 1
         }-${dateOfMonth}, Day of week: ${currentDayOfWeek}, Time: ${hour}:${minute}`
       );
-      console.log("Selected date:", selectedDate);
 
       // Step 3: Loop through calendar entries to find a match
       let matchingSchedule: Schedule | null = null;
@@ -295,6 +293,12 @@ const AttendancePage: React.FC = () => {
             scheduleTeacherId: schedule.teacher_id,
             teacherId: id,
           });
+          console.log(
+            schedule.subject_id === selectedSubjectId &&
+              schedule.class_name === selectedSpeciality &&
+              schedule.teacher_id === id
+          );
+
           if (
             schedule.subject_id === selectedSubjectId &&
             schedule.class_name === selectedSpeciality &&
@@ -316,8 +320,6 @@ const AttendancePage: React.FC = () => {
         setLoading(false);
         return;
       }
-      console.log("Matching schedule found:", matchingSchedule);
-      console.log("Matching entry:", matchingEntry);
 
       // Step 4: Check if current time is within the calendar entry's time slot
       const [startHours, startMinutes] = matchingEntry.start_time
@@ -333,6 +335,11 @@ const AttendancePage: React.FC = () => {
 
       console.log(
         `Checking time: Current: ${currentTimeInMinutes} minutes, Start: ${startTimeInMinutes} minutes, End: ${endTimeInMinutes} minutes`
+      );
+      console.log(
+        "test time solt",
+        currentTimeInMinutes <= startTimeInMinutes &&
+          currentTimeInMinutes >= endTimeInMinutes
       );
 
       if (
@@ -389,7 +396,6 @@ const AttendancePage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      console.log("Fetching attendance with subject_id:", selectedSubjectId);
       const attendancePromises = students.map((student) =>
         axios.get(`${BASE_URL}/attendance`, {
           params: {
@@ -401,7 +407,6 @@ const AttendancePage: React.FC = () => {
       );
       const responses = await Promise.all(attendancePromises);
       const allAttendance = responses.flatMap((response) => response.data);
-      console.log("Attendance data:", allAttendance);
 
       // Filter attendance records for the selected date
       const filteredAttendance = allAttendance.filter(

@@ -14,18 +14,8 @@ const Header = () => {
   const url = "http://127.0.0.1:8000/logout";
 
   const handleLogout = async () => {
-    try {
-      const response = await axios.post(url, { user_id: id });
-
-      if (response.data.message) {
-        toast.success(response.data.message);
-        dispatch(logout());
-      } else {
-        toast.error("Logout failed");
-      }
-    } catch (error) {
-      toast.error(error.response?.data?.detail || "Error logging out");
-    }
+    dispatch(logout());
+    toast.success("logout");
   };
 
   return (

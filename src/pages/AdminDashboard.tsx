@@ -349,8 +349,10 @@ const AdminDashboard = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={subjectInput.toUpperCase()}
-                  onChange={(e) => setSubjectInput(e.target.value)}
+                  value={subjectInput}
+                  onChange={(e) =>
+                    setSubjectInput(e.target.value.toUpperCase())
+                  }
                   className="input input-bordered w-full"
                 />
                 <button
@@ -376,8 +378,8 @@ const AdminDashboard = () => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={classInput.toUpperCase()}
-                  onChange={(e) => setClassInput(e.target.value)}
+                  value={classInput}
+                  onChange={(e) => setClassInput(e.target.value.toUpperCase())}
                   className="input input-bordered w-full"
                 />
                 <button
