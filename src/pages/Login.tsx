@@ -3,6 +3,7 @@ import { FormInput, SubmitBtn } from "../components/index";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { setUser } from "../features/user/UserSlice";
+import { useEffect } from "react";
 
 const url = "http://127.0.0.1:8000/login";
 
@@ -59,7 +60,8 @@ export const action =
       );
 
       toast.success("Login successful");
-      return redirect(data.role === "teacher" ? "/attendance" : "/");
+
+      return redirect(data.role === "admin" ? "/admin" : "/");
     } catch (error) {
       console.error("Login error:", error);
       const errorMessage =

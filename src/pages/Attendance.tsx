@@ -55,7 +55,6 @@ const AttendancePage: React.FC = () => {
   const dispatch = useDispatch();
   const { id, role, token } = useSelector((state: any) => state.user);
 
-  // Redirect if not a teacher or missing credentials
   useEffect(() => {
     if (role !== "teacher") {
       navigate("/");
@@ -89,7 +88,6 @@ const AttendancePage: React.FC = () => {
   const [hasScheduledClass, setHasScheduledClass] = useState<boolean>(false);
   const [calendarEntries, setCalendarEntries] = useState<CalendarEntry[]>([]);
 
-  // Fetch teacher data (classes only)
   const fetchTeacherData = async () => {
     if (!id || !token) {
       setError("Cannot fetch teacher data: Missing user ID or token");
@@ -102,7 +100,6 @@ const AttendancePage: React.FC = () => {
       const response = await axios.get(`${BASE_URL}/teachers/${teacherId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log("Teacher data response:", response.data);
 
       const { classes } = response.data;
       setClasses(classes || []);
@@ -131,7 +128,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Fetch subjects from calendar entries
   const fetchSubjectsFromCalendar = async () => {
     if (!id || !token) {
       setError("Cannot fetch calendar data: Missing user ID or token");
@@ -149,7 +145,6 @@ const AttendancePage: React.FC = () => {
       const entries: CalendarEntry[] = calendarResponse.data || [];
       const subjectsMap: { [key: string]: Subject } = {};
 
-      // Extract unique subjects from calendar entries
       entries.forEach((entry) => {
         entry.schedules.forEach((schedule) => {
           if (schedule.teacher_id === id) {
@@ -165,7 +160,6 @@ const AttendancePage: React.FC = () => {
 
       const subjects = Object.values(subjectsMap);
       setSubjectsWithIds(subjects);
-      console.log("Extracted subjects from calendar:", subjects);
 
       if (!subjects || subjects.length === 0) {
         setError("No subjects found for this teacher in the calendar.");
@@ -190,7 +184,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Fetch students based on selected specialty
   const fetchStudents = async () => {
     if (!selectedSpeciality) {
       setStudents([]);
@@ -230,7 +223,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Fetch teacher's calendar and determine if there's a scheduled class
   const fetchCalendarAndEvents = async () => {
     if (!selectedDate || !selectedSubjectId || !selectedSpeciality) {
       setCalendarEntries([]);
@@ -240,25 +232,32 @@ const AttendancePage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // Step 1: Fetch calendar entries
       const calendarResponse = await axios.get(
         `${BASE_URL}/admin/calendar?id=admin001&role=admin`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
       const entries: CalendarEntry[] = calendarResponse.data || [];
-      setCalendarEntries(entries);
+      // Deep copy to prevent mutations
+      const entriesCopy = JSON.parse(JSON.stringify(entries));
+      setCalendarEntries(entriesCopy);
 
-      // Step 2: Get current date and time in UTC
-      const date = new Date();
-      const dateUTC = new Date(date.toISOString()); // Ensure UTC
-      const day = dateUTC.getUTCDay();
-      const month = dateUTC.getUTCMonth();
-      const year = dateUTC.getUTCFullYear();
-      const dateOfMonth = dateUTC.getUTCDate();
-      const hour = dateUTC.getUTCHours();
-      const minute = dateUTC.getUTCMinutes();
+      // Log specific entry details for debugging
+      const targetEntry = entriesCopy.find(
+        (entry) => entry.entry_id === "681b899ae7a031ba9e6e1d34348d"
+      );
+      if (targetEntry) {
+        console.log("Target entry (681b899ae7a031ba9e6e1d34348d) details:", {
+          start_time: targetEntry.start_time,
+          end_time: targetEntry.end_time,
+        });
+      } else {
+        console.log(
+          "Target entry (681b899ae7a031ba9e6e1d34348d) not found in entries."
+        );
+      }
 
+      const selectedDateObj = new Date(selectedDate);
       const daysOfWeek = [
         "Sunday",
         "Monday",
@@ -268,22 +267,37 @@ const AttendancePage: React.FC = () => {
         "Friday",
         "Saturday",
       ];
-      const currentDayOfWeek = daysOfWeek[day];
+      const selectedDayOfWeek = daysOfWeek[selectedDateObj.getDay()];
       console.log(
-        `Current date (UTC): ${year}-${
-          month + 1
-        }-${dateOfMonth}, Day of week: ${currentDayOfWeek}, Time: ${hour}:${minute}`
+        `Selected date: ${selectedDate}, Day of week: ${selectedDayOfWeek}`
       );
 
-      // Step 3: Loop through calendar entries to find a match
-      let matchingSchedule: Schedule | null = null;
+      const now = new Date();
+      const currentDateStr = now.toISOString().split("T")[0];
+      const isToday = selectedDate === currentDateStr;
+      const currentTimeInMinutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+
       let matchingEntry: CalendarEntry | null = null;
-      for (const entry of entries) {
+      let matchingSchedule: Schedule | null = null;
+
+      for (const entry of entriesCopy) {
+        if (!entry.schedules || entry.schedules.length === 0) {
+          continue;
+        }
+
         if (
-          entry.day_of_week.toLowerCase() !== currentDayOfWeek.toLowerCase()
+          entry.day_of_week.toLowerCase() !== selectedDayOfWeek.toLowerCase()
         ) {
           continue;
         }
+
+        if (entry.recurrence_end) {
+          const recurrenceEndDate = new Date(entry.recurrence_end);
+          if (selectedDateObj > recurrenceEndDate) {
+            continue;
+          }
+        }
+
         for (const schedule of entry.schedules) {
           console.log("Checking schedule:", {
             scheduleSubjectId: schedule.subject_id,
@@ -293,67 +307,56 @@ const AttendancePage: React.FC = () => {
             scheduleTeacherId: schedule.teacher_id,
             teacherId: id,
           });
-          console.log(
-            schedule.subject_id === selectedSubjectId &&
-              schedule.class_name === selectedSpeciality &&
-              schedule.teacher_id === id
-          );
 
           if (
             schedule.subject_id === selectedSubjectId &&
             schedule.class_name === selectedSpeciality &&
             schedule.teacher_id === id
           ) {
-            matchingSchedule = schedule;
             matchingEntry = entry;
+            matchingSchedule = schedule;
             break;
           }
         }
-        if (matchingSchedule) break;
+        if (matchingEntry) break;
       }
 
-      if (!matchingSchedule || !matchingEntry) {
+      if (!matchingEntry || !matchingSchedule) {
         setError(
-          "No scheduled class found for the current day, subject, and class."
+          "No scheduled class found for the selected date, subject, and class. Schedules may be empty or missing."
         );
         setHasScheduledClass(false);
         setLoading(false);
         return;
       }
 
-      // Step 4: Check if current time is within the calendar entry's time slot
       const [startHours, startMinutes] = matchingEntry.start_time
         .split(":")
         .map(Number);
       const [endHours, endMinutes] = matchingEntry.end_time
         .split(":")
         .map(Number);
-
-      const currentTimeInMinutes = hour * 60 + minute;
       const startTimeInMinutes = startHours * 60 + startMinutes;
       const endTimeInMinutes = endHours * 60 + endMinutes;
 
-      console.log(
-        `Checking time: Current: ${currentTimeInMinutes} minutes, Start: ${startTimeInMinutes} minutes, End: ${endTimeInMinutes} minutes`
-      );
-      console.log(
-        "test time solt",
-        currentTimeInMinutes <= startTimeInMinutes &&
-          currentTimeInMinutes >= endTimeInMinutes
-      );
-
-      if (
-        currentTimeInMinutes >= startTimeInMinutes &&
-        currentTimeInMinutes <= endTimeInMinutes
-      ) {
+      if (isToday) {
+        if (
+          currentTimeInMinutes >= startTimeInMinutes &&
+          currentTimeInMinutes <= endTimeInMinutes
+        ) {
+          setHasScheduledClass(true);
+          setError(null);
+          console.log("Time matches, class is active.");
+        } else {
+          setError("Current time is outside the scheduled class time slot.");
+          setHasScheduledClass(false);
+        }
+      } else {
         setHasScheduledClass(true);
         setError(null);
-        console.log("Time matches, class is active.");
-      } else {
-        setError("Current time is outside the scheduled class time slot.");
-        setHasScheduledClass(false);
-        setLoading(false);
-        return;
+        console.log(
+          "Selected date is not today; allowing attendance marking without time restriction."
+        );
       }
     } catch (err: any) {
       let errorMessage = "Failed to fetch calendar data";
@@ -381,7 +384,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Fetch attendance data for the selected subject and students
   const fetchAttendanceData = async () => {
     if (
       !selectedSubjectId ||
@@ -408,7 +410,6 @@ const AttendancePage: React.FC = () => {
       const responses = await Promise.all(attendancePromises);
       const allAttendance = responses.flatMap((response) => response.data);
 
-      // Filter attendance records for the selected date
       const filteredAttendance = allAttendance.filter(
         (record: AttendanceData) =>
           new Date(record.date).toISOString().split("T")[0] === selectedDate
@@ -448,7 +449,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Save attendance for all students
   const handleSaveAttendance = async () => {
     if (!selectedSpeciality) {
       toast.warning("Please select a speciality.");
@@ -515,7 +515,6 @@ const AttendancePage: React.FC = () => {
     }
   };
 
-  // Fetch teacher data and subjects on component mount
   useEffect(() => {
     if (id && token) {
       const fetchData = async () => {
@@ -526,18 +525,14 @@ const AttendancePage: React.FC = () => {
     }
   }, [id, token]);
 
-  // Fetch students when specialty changes
   useEffect(() => {
     fetchStudents();
   }, [selectedSpeciality]);
 
-  // Fetch calendar and events when date or subject changes
   useEffect(() => {
-    console.log("Selected subject_id on change:", selectedSubjectId);
     fetchCalendarAndEvents();
   }, [selectedSubjectId, selectedDate, selectedSpeciality]);
 
-  // Fetch attendance data when subject, specialty, students, or date changes
   useEffect(() => {
     if (hasScheduledClass) {
       fetchAttendanceData();
@@ -550,24 +545,20 @@ const AttendancePage: React.FC = () => {
     hasScheduledClass,
   ]);
 
-  // Calculate absence count for a student
   const getAbsenceCount = (studentId: string) => {
     return attendanceData.filter(
       (record) => record.student_id === studentId && record.status === "Absent"
     ).length;
   };
 
-  // Calculate total absences for the subject
   const totalAbsences = attendanceData.filter(
     (record) => record.status === "Absent"
   ).length;
 
-  // Handle attendance status change for a student
   const handleAttendanceChange = (id: string, status: AttendanceStatus) => {
     setAttendance((prev) => ({ ...prev, [id]: status }));
   };
 
-  // Debug log for button state
   useEffect(() => {
     console.log("Button state:", {
       loading,
